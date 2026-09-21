@@ -1,52 +1,61 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_locator.dart';
+import '../core/profile/profile_controller.dart';
 import '../domain/entities/product.dart';
+import '../widgets/app_side_menu.dart';
 
 import 'promo_codes_screen.dart';
 import 'profile_screen.dart';
 import 'product_info_screen.dart';
 
-
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      drawer: AppSideMenu(
+        currentLocation: MenuLocation.home,
+        onPromocionesTap: () {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PromoCodesScreen()));
+        },
+      ),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
         elevation: 0,
-        leading: PopupMenuButton<String>(
-          icon: const Icon(Icons.menu, color: Colors.black),
-          onSelected: (value) {
-            if (value == 'promociones') {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const PromoCodesScreen()));
-            } else if (value == 'perfil') {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(value: 'promociones', child: Text('Promociones')),
-            const PopupMenuItem(value: 'perfil', child: Text('Perfil')),
-            const PopupMenuItem(value: 'configuracion', child: Text('Configuración')),
-          ],
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: theme.colorScheme.onSurface),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        title: const Text("PyMES", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text("Lyntra", style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: CircleAvatar(
-                backgroundImage: NetworkImage("https://via.placeholder.com/150/333/fff?text=U"),
-                radius: 18,
+            onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              // Escucha al ProfileController para que, en cuanto el usuario
+              // cargue o cambie su foto de perfil, este ícono se actualice
+              // al instante sin necesidad de recargar la pantalla.
+              child: AnimatedBuilder(
+                animation: ProfileController.instance,
+                builder: (context, _) {
+                  return CircleAvatar(
+                    backgroundImage: ProfileController.instance.avatarImage,
+                    radius: 18,
+                  );
+                },
               ),
             ),
           )
@@ -66,27 +75,35 @@ class _HomeScreenState extends State<HomeScreen> {
           final products = snapshot.data ?? [];
 
           if (products.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.inventory, size: 80, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text("No tienes productos aún", style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500)),
-                  SizedBox(height: 8),
-                  Text("Toca el botón + para agregar tu primer producto", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  Icon(Icons.inventory, size: 80, color: theme.colorScheme.onSurfaceVariant),
+                  const SizedBox(height: 16),
+                  Text("No tienes productos aún", style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  Text("Toca el botón + para agregar tu primer producto", style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurfaceVariant)),
                 ],
               ),
             );
           }
 
-          // Agrupar productos por categoría
+          // Agrupar productos separando cada categoría
           Map<String, List<Product>> groupedProducts = {};
           for (var product in products) {
-            if (!groupedProducts.containsKey(product.category)) {
-              groupedProducts[product.category] = [];
+            // Separamos las categorías por coma y limpiamos los espacios
+            final categories = product.category.split(',').map((c) => c.trim()).toList();
+
+            // Agregamos el producto a la lista de cada categoría que tenga asignada
+            for (var cat in categories) {
+              if (cat.isNotEmpty) {
+                if (!groupedProducts.containsKey(cat)) {
+                  groupedProducts[cat] = [];
+                }
+                groupedProducts[cat]!.add(product);
+              }
             }
-            groupedProducts[product.category]!.add(product);
           }
 
           return ListView(
@@ -102,13 +119,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(categoryName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const Icon(Icons.chevron_right, color: Colors.grey),
+                        Text(categoryName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+                        Icon(Icons.chevron_right, color: theme.colorScheme.onSurfaceVariant),
                       ],
                     ),
                   ),
                   SizedBox(
-                    height: 200,
+                    height: 200, // Altura fija del contenedor de la lista
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: categoryProducts.length,
@@ -121,35 +138,39 @@ class _HomeScreenState extends State<HomeScreen> {
                             margin: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 3)],
+                              color: theme.cardColor,
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), spreadRadius: 1, blurRadius: 3)],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SizedBox(
-                                height: 140, 
-                                width: double.infinity,
-                                child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(12),
-                                  topRight: Radius.circular(12),
-                                ),
-                              clipBehavior: Clip.hardEdge, 
-                                child: product.imageUrl.isNotEmpty
-                                ? Image.network(
-                                product.imageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                height: double.infinity,
-                                alignment: Alignment.center,
-                                errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
-                                )
-                                : _buildPlaceholderImage(),
-                            ),
-                              ),
+                                // Uso de Expanded para evitar overflow y adaptar la imagen
                                 Expanded(
-                                  flex: 1,
+                                  flex: 3,
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(12),
+                                        topRight: Radius.circular(12),
+                                      ),
+                                      clipBehavior: Clip.hardEdge,
+                                      child: product.imageUrl.isNotEmpty
+                                          ? Image.network(
+                                              product.imageUrl,
+                                              fit: BoxFit.cover, // Fuerza a que la imagen cubra todo el espacio sin deformarse
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              alignment: Alignment.center,
+                                              errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(context),
+                                            )
+                                          : _buildPlaceholderImage(context),
+                                    ),
+                                  ),
+                                ),
+                                // Uso de Expanded para la sección de texto
+                                Expanded(
+                                  flex: 2,
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Column(
@@ -158,14 +179,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       children: [
                                         Text(
                                           product.name,
-                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: theme.colorScheme.onSurface),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
                                           "\$${product.price.toStringAsFixed(2)}",
-                                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
                                         ),
                                       ],
                                     ),
@@ -188,12 +209,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPlaceholderImage() {
+  Widget _buildPlaceholderImage(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: const Color.fromARGB(255, 243, 243, 243),
-      child: const Icon(Icons.image, size: 40, color: Colors.grey),
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Icon(Icons.image, size: 40, color: theme.colorScheme.onSurfaceVariant),
     );
   }
 }

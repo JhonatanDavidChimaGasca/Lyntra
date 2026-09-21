@@ -14,19 +14,20 @@ class PromoCodesScreen extends StatefulWidget {
 class _PromoCodesScreenState extends State<PromoCodesScreen> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Promociones", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text("Promociones", style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Colors.black),
+            icon: Icon(Icons.add, color: theme.colorScheme.onSurface),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddPromoCodeScreen())),
           ),
         ],
@@ -45,15 +46,15 @@ class _PromoCodesScreenState extends State<PromoCodesScreen> {
           final promoCodes = snapshot.data ?? [];
 
           if (promoCodes.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.local_offer, size: 80, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text("No tienes códigos promocionales", style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500)),
-                  SizedBox(height: 8),
-                  Text("Toca el botón + para crear tu primera promoción", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  Icon(Icons.local_offer, size: 80, color: theme.colorScheme.onSurfaceVariant),
+                  const SizedBox(height: 16),
+                  Text("No tienes códigos promocionales", style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  Text("Toca el botón + para crear tu primera promoción", style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurfaceVariant)),
                 ],
               ),
             );
@@ -85,7 +86,7 @@ class _PromoCodesScreenState extends State<PromoCodesScreen> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(Icons.local_offer, color: statusColor),
@@ -102,7 +103,7 @@ class _PromoCodesScreenState extends State<PromoCodesScreen> {
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(color: statusColor),
                     ),

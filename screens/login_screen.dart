@@ -32,8 +32,6 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => isLoading = true);
     try {
       await AppLocator.auth.signInWithEmail(emailCtrl.text, passwordCtrl.text);
-      // La navegación a MainScreen la maneja el StreamBuilder en main.dart
-      // en cuanto detecta el cambio de estado de autenticación.
     } on AuthException catch (e) {
       if (!mounted) return;
       showAppSnackBar(context, e.message);
@@ -56,8 +54,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -67,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  "Inventarios PyMES",
+                  "Lyntra",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
@@ -76,10 +75,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  "Ingresa tus datos para acceder a tu negocio",
+                Text(
+                  "Ingresa tus datos para acceder a tu cuenta",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 14),
                 ),
                 const SizedBox(height: 30),
 
@@ -143,18 +142,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: isLoading
                       ? null
                       : () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                  child: const Text("¿No tienes cuenta? Regístrate", style: TextStyle(color: Colors.black87)),
+                  child: Text("¿No tienes cuenta? Regístrate", style: TextStyle(color: theme.colorScheme.onSurface)),
                 ),
 
                 const SizedBox(height: 12),
-                const Row(
+                Row(
                   children: [
-                    Expanded(child: Divider(color: Colors.grey)),
+                    Expanded(child: Divider(color: theme.dividerColor)),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text("o", style: TextStyle(color: Colors.grey)),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text("o", style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
                     ),
-                    Expanded(child: Divider(color: Colors.grey)),
+                    Expanded(child: Divider(color: theme.dividerColor)),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -163,22 +162,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: isLoading ? null : _signInWithGoogle,
-                    icon: Container(
+                    icon: Image.asset(
+                      'assets/icon/google_icon.png',
                       width: 20,
                       height: 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        gradient: const LinearGradient(colors: [Colors.red, Colors.yellow, Colors.green, Colors.blue]),
-                      ),
-                      child: const Center(
-                        child: Text("G", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                      ),
                     ),
-                    label: const Text("Continuar con Google", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87)),
+                    label: Text("Continuar con Google", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: theme.colorScheme.onSurface)),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      side: const BorderSide(color: Colors.grey),
+                      side: BorderSide(color: theme.colorScheme.outline),
                     ),
                   ),
                 ),
@@ -187,13 +180,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 12),
                     children: [
-                      TextSpan(text: "Al continuar, aceptas nuestros\n"),
-                      TextSpan(text: "Términos de servicio", style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue)),
-                      TextSpan(text: " y "),
-                      TextSpan(text: "Política de privacidad", style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue)),
-                      TextSpan(text: "."),
+                      const TextSpan(text: "Al continuar, aceptas nuestros\n"),
+                      const TextSpan(text: "Términos de servicio", style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue)),
+                      const TextSpan(text: " y "),
+                      const TextSpan(text: "Política de privacidad", style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue)),
+                      const TextSpan(text: "."),
                     ],
                   ),
                 ),

@@ -22,15 +22,16 @@ class _AddPromoCodeScreenState extends State<AddPromoCodeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Agregar Promoción", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text("Agregar Promoción", style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(

@@ -7,22 +7,23 @@ class ReviewsScreen extends StatelessWidget {
 //PANTALLA DE RESEÑAS//
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Reseñas"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.rate_review_outlined, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
-            Text("Aún no hay reseñas", style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500)),
+            Icon(Icons.rate_review_outlined, size: 80, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(height: 16),
+            Text("Aún no hay reseñas", style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_locator.dart';
+import '../widgets/product_categories.dart';
 import '../domain/entities/product.dart';
 import '../domain/entities/promo_code.dart';
 
@@ -25,15 +26,16 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
     final finalPrice = widget.product.price * (1 - (discountPct / 100));
 
     
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Información", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text("Información", style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -88,7 +90,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(color: Colors.green),
                   ),
@@ -110,16 +112,14 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
                   const Text("Tipo de producto: ", style: TextStyle(fontWeight: FontWeight.bold)),
                   Expanded(
                     child: DropdownButton<String>(
-                      value: widget.product.category,
+                      value: ProductCategories.all.contains(widget.product.category)
+                          ? widget.product.category
+                          : null,
+                      hint: Text(widget.product.category, style: const TextStyle(fontSize: 12)),
                       isExpanded: true,
-                      items: [
-                        "Accesorio dispositivos moviles",
-                        "Herramienta de cocina",
-                        "Herramienta de obra", 
-                        "Pintura",
-                        "Perfume",
-                        "Electrodoméstico"
-                      ].map((String value) => DropdownMenuItem(value: value, child: Text(value, style: const TextStyle(fontSize: 12)))).toList(),
+                      items: ProductCategories.all
+                          .map((String value) => DropdownMenuItem(value: value, child: Text(value, style: const TextStyle(fontSize: 12))))
+                          .toList(),
                       onChanged: null, // Solo lectura en vista
                     ),
                   ),
@@ -135,7 +135,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
                   width: 200,
                   height: 200,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[300]!),
+                    border: Border.all(color: theme.colorScheme.outlineVariant),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
@@ -145,13 +145,13 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
                             widget.product.imageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.image, size: 50, color: Colors.grey),
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              child: Icon(Icons.image, size: 50, color: theme.colorScheme.onSurfaceVariant),
                             ),
                           )
                         : Container(
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.image, size: 50, color: Colors.grey),
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            child: Icon(Icons.image, size: 50, color: theme.colorScheme.onSurfaceVariant),
                           ),
                   ),
                 ),
@@ -160,7 +160,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
               const SizedBox(height: 20),
               const Text("Marca", style: TextStyle(fontWeight: FontWeight.bold)),
               Text(widget.product.brand.isEmpty ? "Sin información" : widget.product.brand, 
-                   style: const TextStyle(color: Colors.grey)),
+                   style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
               
               const SizedBox(height: 16),
               const Text("DESCRIPCIÓN", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -177,7 +177,7 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
                   if (discountApplied != null) ...[
                     Text(
                       "\$${widget.product.price.toStringAsFixed(2)}", 
-                      style: const TextStyle(fontSize: 14, decoration: TextDecoration.lineThrough, color: Colors.grey),
+                      style: TextStyle(fontSize: 14, decoration: TextDecoration.lineThrough, color: theme.colorScheme.onSurfaceVariant),
                     ),
                     const SizedBox(width: 8),
                     Text("\$${finalPrice.toStringAsFixed(2)}", style: const TextStyle(fontSize: 16, color: Colors.green, fontWeight: FontWeight.bold)),
@@ -192,11 +192,13 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
     );
   }
 
-  void _applyPromoCode() async {
+ void _applyPromoCode() async {
     if (promoController.text.trim().isEmpty) return;
     
     try {
       PromoCode? promoCode = await AppLocator.promoCodes.validatePromoCode(promoController.text.trim());
+      
+      if (!mounted) return;
       
       if (promoCode != null) {
         setState(() {
@@ -213,6 +215,8 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error al validar codigo promocional"), backgroundColor: Colors.red),
       );
