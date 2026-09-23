@@ -19,8 +19,7 @@ import '../domain/repositories/settings_repository.dart';
 /// `AppLocator.products.getProducts()` en vez de `FirebaseService.getProducts()`
 /// — no conocen ni les importa que detrás hay Firestore.
 ///
-/// Si más adelante prefieres un framework de DI de verdad (get_it, riverpod),
-/// este archivo es el único que tendrías que tocar.
+/// Si más adelante se prefiere algun otro framework este archivo es el único que tendrías que tocar.
 class AppLocator {
   AppLocator._();
 
